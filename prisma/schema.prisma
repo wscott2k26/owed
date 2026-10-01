@@ -1,0 +1,187 @@
+// Production schema (PostgreSQL). Use schema.sqlite.prisma for local zero-config QA.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum InvoiceStatus {
+  open
+  reminded
+  escalated
+  paused
+  paid
+  disputed
+}
+
+enum Channel {
+  email
+  sms
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  edited
+  snoozed
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  name               String?
+  businessName       String?
+  passwordHash       String
+  emailVerifiedAt    DateTime?
+  timezone           String   @default("America/New_York")
+  stripeCustomerId   String?  @unique
+  stripeSubscriptionId String? @unique
+  stripeEventAt       DateTime?
+  subscriptionStatus String   @default("trialing")
+  trialEndsAt        DateTime?
+  plan               String   @default("starter")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  sessions           Session[]
+  resetTokens        PasswordResetToken[]
+  verificationTokens EmailVerificationToken[]
+  customers          Customer[]
+  invoices           Invoice[]
+  escalationPolicies EscalationPolicy[]
+  approvals          Approval[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Customer {
+  id          String @id @default(cuid())
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  email       String?
+  phone       String?
+  toneDial         Int    @default(50)
+  toneMemory       String?
+  smsConsentAt     DateTime?
+  smsConsentSource String?
+  smsOptOutAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  invoices    Invoice[]
+
+  @@index([userId])
+  @@index([userId, email])
+  @@index([userId, phone])
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  number      String
+  amountCents Int
+  dueDate     DateTime
+  status      InvoiceStatus @default(open)
+  notes       String?
+  pausedAt    DateTime?
+  lastReplyAt DateTime?
+  paidAt      DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  reminderEvents ReminderEvent[]
+  approvals      Approval[]
+
+  @@unique([userId, number])
+  @@index([userId, status])
+  @@index([customerId])
+}
+
+model ReminderEvent {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  stage       Int
+  channel     Channel
+  templateKey String
+  tone        Int
+  providerId  String?
+  sentAt      DateTime @default(now())
+  result      String?
+
+  @@unique([invoiceId, stage])
+  @@index([invoiceId])
+}
+
+model EscalationPolicy {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String @default("Default")
+  stages Json
+
+  @@index([userId])
+}
+
+model Approval {
+  id          String         @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stage       Int
+  channel     Channel
+  templateKey String
+  tone        Int
+  draftBody   String
+  status      ApprovalStatus @default(pending)
+  snoozedUntil DateTime?
+  createdAt   DateTime       @default(now())
+  decidedAt   DateTime?
+
+  @@unique([invoiceId, stage])
+  @@index([userId, status])
+  @@index([invoiceId])
+}

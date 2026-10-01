@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0b0c0e;
+  --foreground: #ededef;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Ambient background rotator -------------------------------------
+   Five dark trade-craft scenes crossfade behind the app every 45s
+   (see components/BackgroundRotator.tsx). Pure CSS, zero assets.      */
+
+.owed-bg-rotator {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.owed-bg-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 2.8s ease;
+}
+
+.owed-bg-scene.is-active {
+  opacity: 1;
+}
+
+/* Shared vignette so every scene falls away at the edges. */
+.owed-bg-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 95% at 50% 42%,
+    rgba(0, 0, 0, 0) 55%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+
+/* 1 — Ember dawn: warm glow from the top over a workshop grid. */
+.owed-bg-scene-1 {
+  background:
+    radial-gradient(
+      1100px 480px at 50% -8%,
+      rgba(245, 166, 35, 0.09),
+      rgba(245, 166, 35, 0) 62%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M44 0H0v44' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3C/svg%3E"),
+    #0b0c0e;
+}
+
+/* 2 — Forge side: amber heat bleeding in from the left, brushed steel. */
+.owed-bg-scene-2 {
+  background:
+    radial-gradient(
+      700px 900px at -6% 50%,
+      rgba(245, 166, 35, 0.1),
+      rgba(245, 166, 35, 0) 60%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='26'%3E%3Cpath d='M0 13H40' fill='none' stroke='rgba(255,255,255,0.022)' stroke-width='1'/%3E%3C/svg%3E"),
+    #0b0c0e;
+}
+
+/* 3 — Ledger: faint ruled lines like an old account book, soft top light. */
+.owed-bg-scene-3 {
+  background:
+    radial-gradient(
+      900px 380px at 50% -10%,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0) 60%
+    ),
+    radial-gradient(
+      600px 500px at 92% 110%,
+      rgba(245, 166, 35, 0.05),
+      rgba(245, 166, 35, 0) 60%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='38'%3E%3Cpath d='M0 37.5H40' fill='none' stroke='rgba(255,255,255,0.035)' stroke-width='1'/%3E%3C/svg%3E"),
+    #0b0c0e;
+}
+
+/* 4 — Night shift: pegboard dots, low amber under-glow like a shop at night. */
+.owed-bg-scene-4 {
+  background:
+    radial-gradient(
+      1000px 420px at 50% 112%,
+      rgba(245, 166, 35, 0.08),
+      rgba(245, 166, 35, 0) 62%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34'%3E%3Ccircle cx='17' cy='17' r='1.3' fill='rgba(255,255,255,0.045)'/%3E%3C/svg%3E"),
+    #0a0b0d;
+}
+
+/* 5 — Drafting: fine grid with a warm corner lamp glow. */
+.owed-bg-scene-5 {
+  background:
+    radial-gradient(
+      620px 620px at 108% -8%,
+      rgba(245, 166, 35, 0.08),
+      rgba(245, 166, 35, 0) 60%
+    ),
+    radial-gradient(
+      500px 500px at -8% 108%,
+      rgba(255, 255, 255, 0.03),
+      rgba(255, 255, 255, 0) 60%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M28 0H0v28' fill='none' stroke='rgba(255,255,255,0.025)' stroke-width='1'/%3E%3C/svg%3E"),
+    #0b0c0e;
+}
+
+/* Tabular numerals for every money figure — amounts must never jitter. */
+.tnum,
+td[data-money],
+[data-tnum] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+::selection {
+  background: rgba(245, 166, 35, 0.28);
+  color: #fff;
+}
+
+/* Quiet scrollbars for the dark theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2c30 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a2c30;
+  border-radius: 4px;
+}
+
+/* Range inputs (tone dial) — amber, no library needed */
+input[type="range"].tone-dial {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    #3ba55d 0%,
+    #f5a623 50%,
+    #e5484d 100%
+  );
+  outline: none;
+}
+input[type="range"].tone-dial::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffb62e;
+  border: 2px solid #0b0c0e;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+input[type="range"].tone-dial::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffb62e;
+  border: 2px solid #0b0c0e;
+  cursor: pointer;
+}
+
+@layer components {
+  .card { @apply rounded-lg border border-hairline bg-surface; }
+  .field { @apply w-full rounded-md border border-hairline bg-surface2 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-amber/60 focus:ring-1 focus:ring-amber/30; }
+  .btn-primary { @apply inline-flex items-center justify-center rounded-md bg-amber px-4 py-2 text-sm font-semibold text-canvas transition hover:bg-amber-bright disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-secondary { @apply inline-flex items-center justify-center rounded-md border border-hairline bg-surface px-4 py-2 text-sm font-medium text-muted transition hover:border-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-50; }
+}
+
+a { text-underline-offset: 3px; }

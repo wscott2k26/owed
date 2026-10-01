@@ -1,0 +1,42 @@
+{
+  "name": "owed",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "build:local": "prisma generate --schema=prisma/schema.sqlite.prisma && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:setup": "prisma generate --schema=prisma/schema.sqlite.prisma && prisma db push --schema=prisma/schema.sqlite.prisma && tsx prisma/seed.ts",
+    "db:push": "prisma db push --schema=prisma/schema.sqlite.prisma",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio --schema=prisma/schema.sqlite.prisma",
+    "check": "npm test && npm run lint && npm run build:local",
+    "db:deploy": "prisma generate && prisma migrate deploy"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.10.1",
+    "next": "^16.3.8",
+    "prisma": "^6.10.1",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  }
+}

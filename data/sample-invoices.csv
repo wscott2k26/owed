@@ -1,0 +1,11 @@
+invoice_number,customer_name,customer_email,customer_phone,amount,due_date,notes
+INV-1001,Sarah Mitchell,sarah.mitchell@example.com,555-0142,2850.00,2026-08-15,Water heater install — 50% balance
+INV-1002,Chen Property Management,robert.chen@example.com,555-0177,475.00,2026-08-22,"Unit 4B — leaky faucet, 2nd visit, parts on backorder"
+INV-1003,Denise Walker,denise.walker@example.com,555-0119,180.00,2026-08-28,Drain cleaning — kitchen sink
+INV-1004,Bright Smiles Dental,office@example.com,555-0163,"$4,800.00",2026-09-12,Full repipe — two exam rooms
+INV-1005,The Copper Mug Cafe,orders@example.com,555-0128,620.00,2026-09-18,"Espresso machine water line — urgent, weekend call"
+INV-1006,James Okafor,james.okafor@example.com,555-0155,940.00,2026-09-22,Sump pump replacement
+INV-1007,Parkside Rentals,linda.park@example.com,555-0181,1150.00,2026-10-02,"Boiler repair — tenant approved ""overtime"""
+INV-1008,Tom Alvarez,tom.alvarez@example.com,555-0134,310.00,2026-10-05,Toilet rebuild — master bath
+INV-1009,Priya Raman,priya.raman@example.com,555-0192,2200.00,2026-10-19,Bathroom rough-in — deposit
+INV-1010,Greenfield Apartments,maintenance@example.com,555-0106,"$3,450.00",2026-10-21,Water main repair — emergency weekend call
