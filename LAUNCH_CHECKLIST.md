@@ -40,7 +40,9 @@
 - [ ] Resend sending domain verified; outbound key, inbound route, and webhook secret configured
 - [ ] Twilio sender/number configured; inbound webhook installed; required messaging registration/consent process completed
 - [x] Stripe subscription products/prices, hosted checkout, portal, and signed webhook configured
-- [ ] OpenAI production key stored in Railway if Pro AI drafting is desired
+- [x] Live Payment Links temporarily deactivated until messaging providers pass final QA
+- [x] Hourly production reminder scheduler enabled and authenticated cron run verified
+- [x] OpenAI production key stored in Railway and live drafting verified
 - [x] End-to-end authenticated app + Stripe checkout tested while `SEND_MODE=simulate`
 - [ ] Controlled live email/SMS test to owned destinations
 - [ ] Privacy Policy / Terms finalized for the operating company and jurisdictions served
