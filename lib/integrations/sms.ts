@@ -9,7 +9,8 @@ function twilioReady() { return !!(env("TWILIO_ACCOUNT_SID") && env("TWILIO_AUTH
 function bandwidthReady() { return !!(env("BANDWIDTH_CLIENT_ID") && env("BANDWIDTH_CLIENT_SECRET") && env("BANDWIDTH_ACCOUNT_ID") && env("BANDWIDTH_APPLICATION_ID") && env("BANDWIDTH_PHONE_NUMBER")); }
 export function getSmsProvider() {
   const explicit = env("SMS_PROVIDER").toLowerCase();
-  if (explicit === "bandwidth" || explicit === "twilio") return explicit;
+  if (explicit === "bandwidth") return bandwidthReady() ? "bandwidth" : "none";
+  if (explicit === "twilio") return twilioReady() ? "twilio" : "none";
   if (bandwidthReady()) return "bandwidth";
   if (twilioReady()) return "twilio";
   return "none";

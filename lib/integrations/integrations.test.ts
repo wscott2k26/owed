@@ -53,6 +53,16 @@ describe("Stripe hosted billing links", () => {
 });
 
 describe("SMS provider selection", () => {
+  it("does not report an explicitly selected provider as ready without credentials", () => {
+    process.env.SMS_PROVIDER = "bandwidth";
+    process.env.BANDWIDTH_CLIENT_ID = "";
+    process.env.BANDWIDTH_CLIENT_SECRET = "";
+    process.env.BANDWIDTH_ACCOUNT_ID = "";
+    process.env.BANDWIDTH_APPLICATION_ID = "";
+    process.env.BANDWIDTH_PHONE_NUMBER = "";
+    expect(getSmsProvider()).toBe("none");
+  });
+
   it("selects Bandwidth when its production credentials are present", () => {
     process.env.SMS_PROVIDER = "";
     process.env.BANDWIDTH_CLIENT_ID = "client";
