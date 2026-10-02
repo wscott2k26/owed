@@ -3,7 +3,7 @@ import { prisma } from "../db";
 import { daysOverdue, isWithinQuietHours, nextAction, DEFAULT_POLICY, type EscalationPolicy, type EscalationStage } from "../escalation/engine";
 import { draftMessage } from "../integrations/aiDraft";
 import { replyToForInvoice, sendEmail } from "../integrations/email";
-import { sendSms } from "../integrations/sms";
+import { isSmsConfigured, sendSms } from "../integrations/sms";
 import { intEnv } from "../config";
 
 const qStart = () => intEnv("QUIET_HOURS_START", 21, 0, 23);
@@ -105,12 +105,12 @@ export async function processEscalations(now = new Date()) {
     if (existing?.status === "snoozed" && existing.snoozedUntil && existing.snoozedUntil > now) continue;
 
     let channel = invoice.user.plan === "pro" ? action.channel : "email";
-    if (channel === "sms" && (invoice.customer.smsOptOutAt || !invoice.customer.smsConsentAt || !invoice.customer.phone)) {
+    if (channel === "sms" && (!isSmsConfigured() || invoice.customer.smsOptOutAt || !invoice.customer.smsConsentAt || !invoice.customer.phone)) {
       if (invoice.customer.email) channel = "email";
       else { stats.errors.push(`${invoice.number}: no usable contact channel`); continue; }
     }
     if (channel === "email" && !invoice.customer.email) {
-      if (invoice.customer.phone && invoice.customer.smsConsentAt && !invoice.customer.smsOptOutAt) channel = "sms";
+      if (isSmsConfigured() && invoice.customer.phone && invoice.customer.smsConsentAt && !invoice.customer.smsOptOutAt) channel = "sms";
       else { stats.errors.push(`${invoice.number}: no usable contact channel`); continue; }
     }
 
