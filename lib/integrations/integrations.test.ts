@@ -1,6 +1,6 @@
 import { createHmac, randomBytes } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { sendSms, verifyTwilioSignature } from "./sms";
+import { getSmsProvider, sendSms, verifyBandwidthWebhook, verifyTwilioSignature } from "./sms";
 import { sendEmail, verifyResendWebhook } from "./email";
 import { createCheckoutSession, getBillingPortalUrl, isBillingConfigured, verifyStripeWebhook } from "./billing";
 import { draftMessage } from "./aiDraft";
@@ -49,6 +49,26 @@ describe("Stripe hosted billing links", () => {
     const portal = await getBillingPortalUrl("cus_test", "https://example.com/dashboard", "owner@example.com");
     expect(portal.ok).toBe(true);
     if (portal.ok) expect(new URL(portal.url).searchParams.get("prefilled_email")).toBe("owner@example.com");
+  });
+});
+
+describe("SMS provider selection", () => {
+  it("selects Bandwidth when its production credentials are present", () => {
+    process.env.SMS_PROVIDER = "";
+    process.env.BANDWIDTH_CLIENT_ID = "client";
+    process.env.BANDWIDTH_CLIENT_SECRET = "secret";
+    process.env.BANDWIDTH_ACCOUNT_ID = "9900000";
+    process.env.BANDWIDTH_APPLICATION_ID = "app";
+    process.env.BANDWIDTH_PHONE_NUMBER = "+15551234567";
+    expect(getSmsProvider()).toBe("bandwidth");
+  });
+
+  it("verifies Bandwidth callback basic auth", () => {
+    process.env.BANDWIDTH_WEBHOOK_USERNAME = "owed";
+    process.env.BANDWIDTH_WEBHOOK_PASSWORD = "callback-secret";
+    const value = Buffer.from("owed:callback-secret").toString("base64");
+    expect(verifyBandwidthWebhook(`Basic ${value}`)).toBe(true);
+    expect(verifyBandwidthWebhook("Basic bad")).toBe(false);
   });
 });
 

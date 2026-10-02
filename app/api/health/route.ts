@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/db";
-import { isSmsConfigured } from "../../../lib/integrations/sms";
+import { getSmsProvider, isSmsConfigured } from "../../../lib/integrations/sms";
 import { isEmailConfigured } from "../../../lib/integrations/email";
 import { isAiConfigured } from "../../../lib/integrations/aiDraft";
 import { isBillingConfigured } from "../../../lib/integrations/billing";
@@ -14,7 +14,7 @@ export async function GET() {
     ok,
     database,
     sendMode: (process.env.SEND_MODE || "simulate").toLowerCase(),
-    integrations: { email: isEmailConfigured(), sms: isSmsConfigured(), ai: isAiConfigured(), billing: isBillingConfigured() },
+    integrations: { email: isEmailConfigured(), sms: isSmsConfigured(), smsProvider: getSmsProvider(), ai: isAiConfigured(), billing: isBillingConfigured() },
     scheduler: {
       enabled: (process.env.INTERNAL_REMINDER_CRON || "").trim().toLowerCase() === "true",
       intervalMinutes: intEnv("REMINDER_CRON_INTERVAL_MINUTES", 60, 5, 1440),
