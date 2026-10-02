@@ -37,17 +37,18 @@
 - [x] Production PostgreSQL URL added and schema migration deployed
 - [x] HTTPS `APP_URL` configured
 - [x] Strong `CRON_SECRET` stored only in server configuration
-- [ ] Resend sending domain verified; outbound key, inbound route, and webhook secret configured
-- [ ] Twilio sender/number configured; inbound webhook installed; required messaging registration/consent process completed
+- [x] Resend sending domain verified; least-privilege outbound key, dedicated reply inbox, and webhook secret configured
+- [ ] Bandwidth/Twilio SMS sender, credentials, inbound webhook, and required messaging registration/consent process completed
 - [x] Stripe subscription products/prices, hosted checkout, portal, and signed webhook configured
 - [x] Live Payment Links temporarily deactivated until messaging providers pass final QA
 - [x] Hourly production reminder scheduler enabled and authenticated cron run verified
 - [x] OpenAI production key stored in Railway and live drafting verified
-- [x] End-to-end authenticated app + Stripe checkout tested while `SEND_MODE=simulate`
-- [ ] Controlled live email/SMS test to owned destinations
+- [x] End-to-end authenticated app + Stripe checkout tested; production email path retested after `SEND_MODE=live`
+- [x] Controlled live email test to an owned destination, including delivery webhook and inbound reply pause
+- [ ] Controlled live SMS test to an owned destination
 - [ ] Privacy Policy / Terms finalized for the operating company and jurisdictions served
 - [ ] Backups, monitoring, error alerting, and production log retention policy reviewed/finalized
-- [ ] Only after the above: set `SEND_MODE=live`
+- [x] `SEND_MODE=live` enabled after production email end-to-end QA; SMS-unavailable paths fall back safely to email
 
 ## CI note
 
