@@ -13,29 +13,40 @@
 - [x] Provider-send idempotency lock
 - [x] Twilio / Resend / Stripe signed-webhook verification
 - [x] Stripe subscription/plan lifecycle + stale-event guard
+- [x] Stripe hosted Starter/Pro checkout + dedicated Customer Portal configuration
 - [x] OpenAI drafting with deterministic fallback and no invented threats/fees
 - [x] Production PostgreSQL migration included
+- [x] AR aging, Focus Today prioritization, and collection activity timeline
 - [x] Health/status endpoint and safety limits
 - [x] Dependency install completed from npm registry
-- [x] 39 automated tests pass
+- [x] 40 automated tests pass
 - [x] ESLint passes
 - [x] Next.js production-framework build + TypeScript pass
 - [x] `npm run check` passes
 - [x] npm security audit reports 0 known vulnerabilities
 - [x] Next.js 16 compatibility migration completed
+- [x] Railway production deployment reaches SUCCESS
+- [x] Production health endpoint returns HTTP 200
+- [x] Production database connection passes
+- [x] Stripe products, prices, Payment Links, portal, and webhook endpoint configured
+- [x] Authenticated Starter/Pro checkout smoke test reaches Stripe-hosted Checkout
+- [x] Invalid provider webhook signatures are rejected in production
 
 ## External go-live gate
 
-These require deployment/provider accounts and cannot be embedded in source code:
-
-- [ ] Production PostgreSQL URL added and `npm run db:deploy` succeeds
-- [ ] HTTPS domain set as `APP_URL`
-- [ ] Strong `CRON_SECRET` stored only in server secrets
-- [ ] Resend sending domain verified; inbound route + webhook secret configured
+- [x] Production PostgreSQL URL added and schema migration deployed
+- [x] HTTPS `APP_URL` configured
+- [x] Strong `CRON_SECRET` stored only in server configuration
+- [ ] Resend sending domain verified; outbound key, inbound route, and webhook secret configured
 - [ ] Twilio sender/number configured; inbound webhook installed; required messaging registration/consent process completed
-- [ ] Stripe products/prices created; webhook secret configured; test checkout + portal verified
-- [ ] OpenAI key added only if Pro AI drafting is desired
-- [ ] End-to-end test completed while `SEND_MODE=simulate`, followed by controlled live test to owned test destinations
+- [x] Stripe subscription products/prices, hosted checkout, portal, and signed webhook configured
+- [ ] OpenAI production key stored in Railway if Pro AI drafting is desired
+- [x] End-to-end authenticated app + Stripe checkout tested while `SEND_MODE=simulate`
+- [ ] Controlled live email/SMS test to owned destinations
 - [ ] Privacy Policy / Terms finalized for the operating company and jurisdictions served
-- [ ] Backups, monitoring, error alerting, and production log retention configured on the chosen host/database
+- [ ] Backups, monitoring, error alerting, and production log retention policy reviewed/finalized
 - [ ] Only after the above: set `SEND_MODE=live`
+
+## CI note
+
+GitHub Actions is currently blocked at the account level by a GitHub billing lock. Jobs fail before a runner starts and execute zero steps. This is not an Owed code failure. Until the GitHub account issue is cleared, the release gate is the successful local `npm run check` plus Railway production build/deploy and health checks.
