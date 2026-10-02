@@ -4,6 +4,7 @@ import { isSmsConfigured } from "../../../lib/integrations/sms";
 import { isEmailConfigured } from "../../../lib/integrations/email";
 import { isAiConfigured } from "../../../lib/integrations/aiDraft";
 import { isBillingConfigured } from "../../../lib/integrations/billing";
+import { intEnv } from "../../../lib/config";
 
 export async function GET() {
   let database = false;
@@ -14,5 +15,9 @@ export async function GET() {
     database,
     sendMode: (process.env.SEND_MODE || "simulate").toLowerCase(),
     integrations: { email: isEmailConfigured(), sms: isSmsConfigured(), ai: isAiConfigured(), billing: isBillingConfigured() },
+    scheduler: {
+      enabled: (process.env.INTERNAL_REMINDER_CRON || "").trim().toLowerCase() === "true",
+      intervalMinutes: intEnv("REMINDER_CRON_INTERVAL_MINUTES", 60, 5, 1440),
+    },
   }, { status: ok ? 200 : 503 });
 }

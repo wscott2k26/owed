@@ -34,11 +34,12 @@ try {
   }
 
   const summary = {
-    scanned: Number(data?.scanned || 0),
+    examined: Number(data?.examined || 0),
     sent: Number(data?.sent || 0),
-    queuedForApproval: Number(data?.queuedForApproval || 0),
-    skipped: Number(data?.skipped || 0),
-    failed: Number(data?.failed || 0),
+    approvalsCreated: Number(data?.approvalsCreated || 0),
+    skippedQuiet: Number(data?.skippedQuiet || 0),
+    skippedLimit: Number(data?.skippedLimit || 0),
+    errors: Array.isArray(data?.errors) ? data.errors.length : 0,
   };
 
   console.log("Owed reminder cron completed:", JSON.stringify(summary));

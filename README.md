@@ -14,7 +14,7 @@ Owed is a production-capable invoice follow-up SaaS for trades and service busin
 - **Webhook security:** Twilio HMAC-SHA1, Resend/Svix HMAC-SHA256, Stripe HMAC-SHA256 with timestamp tolerance.
 - **Billing:** $29 Starter / $39 Pro checkout paths, customer portal, subscription status/plan sync, out-of-order Stripe event protection.
 - **Database:** PostgreSQL production schema + initial Prisma migration; SQLite local-QA schema.
-- **Operations:** protected hourly cron endpoint, health endpoint, provider-readiness panel, production security headers, configurable scan/send/import safety limits.
+- **Operations:** protected reminder cron endpoint, built-in hourly scheduler for long-lived Node/Railway hosting, Vercel cron fallback, health endpoint, provider-readiness panel, production security headers, configurable scan/send/import safety limits.
 
 ## Safe local run
 
@@ -53,7 +53,7 @@ npm start
 ## Production configuration
 
 1. Set `DATABASE_URL` to managed PostgreSQL and run `npm run db:deploy`.
-2. Set a strong random `CRON_SECRET`; `vercel.json` calls `/api/cron/escalate` hourly.
+2. Set a strong random `CRON_SECRET`. On Railway or another long-lived Node host, set `INTERNAL_REMINDER_CRON=true` (default interval 60 minutes). On Vercel, keep the internal scheduler off and use `vercel.json` to call `/api/cron/escalate` hourly.
 3. Set the public HTTPS `APP_URL` exactly; it is also used for same-origin checks and signed webhook URLs.
 4. Configure Resend. For safest reply correlation, use an inbound address pattern such as `reply+{invoiceId}@inbound.example.com`.
 5. Configure Twilio, its incoming-message webhook, and any registration/consent requirements that apply to the sender and traffic.
