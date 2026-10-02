@@ -52,7 +52,10 @@ export async function getBillingPortalUrl(customerId: string, returnUrl: string)
   if (!isBillingConfigured()) return { ok: false, error: "Stripe billing is not configured." };
   if (!customerId) return { ok: false, error: "No Stripe customer is linked to this account yet." };
   try {
-    const data = await stripePost("/billing_portal/sessions", new URLSearchParams({ customer: customerId, return_url: returnUrl }));
+    const params = new URLSearchParams({ customer: customerId, return_url: returnUrl });
+    const configurationId = env("STRIPE_PORTAL_CONFIGURATION_ID");
+    if (configurationId) params.set("configuration", configurationId);
+    const data = await stripePost("/billing_portal/sessions", params);
     if (!data?.url || !data?.id) return { ok: false, error: "Stripe did not return a billing portal URL." };
     return { ok: true, url: data.url, providerId: data.id };
   } catch (error) {
