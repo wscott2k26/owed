@@ -15,7 +15,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio --schema=prisma/schema.sqlite.prisma",
     "check": "npm test && npm run lint && npm run build:local",
-    "db:deploy": "prisma generate && prisma migrate deploy"
+    "db:deploy": "prisma generate && prisma migrate deploy",
+    "cron:reminders": "node scripts/run-reminder-cron.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
