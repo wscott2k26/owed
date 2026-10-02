@@ -2,7 +2,7 @@ import { createHmac, randomBytes } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { sendSms, verifyTwilioSignature } from "./sms";
 import { sendEmail, verifyResendWebhook } from "./email";
-import { verifyStripeWebhook } from "./billing";
+import { createCheckoutSession, getBillingPortalUrl, isBillingConfigured, verifyStripeWebhook } from "./billing";
 import { draftMessage } from "./aiDraft";
 
 describe("safe integration mode", () => {
@@ -21,6 +21,34 @@ describe("safe integration mode", () => {
     });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.source).toBe("template-fallback");
+  });
+});
+
+describe("Stripe hosted billing links", () => {
+  it("builds reconciled Checkout and portal URLs without a secret API key", async () => {
+    process.env.STRIPE_SECRET_KEY = "";
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+    process.env.STRIPE_PRICE_STARTER = "price_starter";
+    process.env.STRIPE_PRICE_PRO = "price_pro";
+    process.env.STRIPE_PAYMENT_LINK_STARTER = "https://buy.stripe.com/starter";
+    process.env.STRIPE_PAYMENT_LINK_PRO = "https://buy.stripe.com/pro";
+    process.env.STRIPE_PORTAL_LOGIN_URL = "https://billing.stripe.com/p/login/owed";
+    expect(isBillingConfigured()).toBe(true);
+
+    const checkout = await createCheckoutSession({
+      priceId: "price_starter", userId: "user_abc-123", email: "owner@example.com",
+      successUrl: "https://example.com/success", cancelUrl: "https://example.com/cancel",
+    });
+    expect(checkout.ok).toBe(true);
+    if (checkout.ok) {
+      const url = new URL(checkout.url);
+      expect(url.searchParams.get("client_reference_id")).toBe("user_abc-123");
+      expect(url.searchParams.get("locked_prefilled_email")).toBe("owner@example.com");
+    }
+
+    const portal = await getBillingPortalUrl("cus_test", "https://example.com/dashboard", "owner@example.com");
+    expect(portal.ok).toBe(true);
+    if (portal.ok) expect(new URL(portal.url).searchParams.get("prefilled_email")).toBe("owner@example.com");
   });
 });
 

@@ -4,7 +4,7 @@ import { getBillingPortalUrl } from "../../../../lib/integrations/billing";
 export async function POST(request: Request) {
   const auth = await requireApiUser(request); if (!auth.user) return auth.response!;
   const base = (process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
-  const result = await getBillingPortalUrl(auth.user.stripeCustomerId || "", `${base}/dashboard`);
+  const result = await getBillingPortalUrl(auth.user.stripeCustomerId || "", `${base}/dashboard`, auth.user.email);
   if (result.ok) return NextResponse.json(result);
   return NextResponse.json({ error: (result as { ok: false; error: string }).error }, { status: 502 });
 }

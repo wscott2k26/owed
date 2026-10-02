@@ -57,7 +57,7 @@ npm start
 3. Set the public HTTPS `APP_URL` exactly; it is also used for same-origin checks and signed webhook URLs.
 4. Configure Resend. For safest reply correlation, use an inbound address pattern such as `reply+{invoiceId}@inbound.example.com`.
 5. Configure Twilio, its incoming-message webhook, and any registration/consent requirements that apply to the sender and traffic.
-6. Configure Stripe Starter/Pro price IDs and webhook events for Checkout, subscriptions, and invoices.
+6. Configure Stripe Starter/Pro price IDs, hosted Payment Links, the dedicated Customer Portal login link, and signed webhook events for Checkout, subscriptions, and invoices. A server secret key is optional when hosted links are used.
 7. OpenAI is optional. Without an API key, Owed uses deterministic safe templates.
 8. Keep `SEND_MODE=simulate` until provider test traffic passes; then change only the production environment to `SEND_MODE=live`.
 9. Replace the starter Privacy/Terms language with the operating company's final legal policies before public launch.

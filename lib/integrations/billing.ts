@@ -1,11 +1,25 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export interface BillingConfig { starter: string; pro: string; }
-export type CheckoutOptions = { priceId: string; userId: string; successUrl: string; cancelUrl: string; customerId?: string | null; };
+export type CheckoutOptions = { priceId: string; userId: string; successUrl: string; cancelUrl: string; customerId?: string | null; email?: string | null; };
 export type CheckoutResult = { ok: true; url: string; providerId: string } | { ok: false; error: string };
 type StripeApiResponse = { id?: string; url?: string; error?: { message?: string } };
 const env = (name: string) => (process.env[name] ?? "").trim();
-export const isBillingConfigured = () => !!(env("STRIPE_SECRET_KEY") && env("STRIPE_PRICE_STARTER") && env("STRIPE_PRICE_PRO"));
+
+function paymentLinkForPrice(priceId: string) {
+  const { starter, pro } = getPriceIds();
+  if (priceId === starter) return env("STRIPE_PAYMENT_LINK_STARTER");
+  if (priceId === pro) return env("STRIPE_PAYMENT_LINK_PRO");
+  return "";
+}
+
+export const isBillingConfigured = () => {
+  const pricesReady = !!(env("STRIPE_PRICE_STARTER") && env("STRIPE_PRICE_PRO"));
+  const webhookReady = !!env("STRIPE_WEBHOOK_SECRET");
+  const paymentLinksReady = !!(env("STRIPE_PAYMENT_LINK_STARTER") && env("STRIPE_PAYMENT_LINK_PRO") && env("STRIPE_PORTAL_LOGIN_URL"));
+  const apiReady = !!env("STRIPE_SECRET_KEY");
+  return pricesReady && webhookReady && (paymentLinksReady || apiReady);
+};
 
 export function getPriceIds(): BillingConfig {
   const starter = env("STRIPE_PRICE_STARTER"); const pro = env("STRIPE_PRICE_PRO");
@@ -27,6 +41,17 @@ async function stripePost(path: string, params: URLSearchParams): Promise<Stripe
 export async function createCheckoutSession(opts: CheckoutOptions): Promise<CheckoutResult> {
   if (!isBillingConfigured()) return { ok: false, error: "Stripe billing is not configured." };
   if (!opts.priceId || !opts.userId || !opts.successUrl || !opts.cancelUrl) return { ok: false, error: "Checkout options are incomplete." };
+
+  const link = paymentLinkForPrice(opts.priceId);
+  if (link) {
+    if (!/^[A-Za-z0-9_-]{1,200}$/.test(opts.userId)) return { ok: false, error: "Account identifier cannot be used for checkout reconciliation." };
+    const url = new URL(link);
+    url.searchParams.set("client_reference_id", opts.userId);
+    if (opts.email) url.searchParams.set("locked_prefilled_email", opts.email);
+    return { ok: true, url: url.toString(), providerId: link };
+  }
+
+  if (!env("STRIPE_SECRET_KEY")) return { ok: false, error: "Stripe Checkout is not configured." };
   const params = new URLSearchParams({
     mode: "subscription",
     "line_items[0][price]": opts.priceId,
@@ -48,9 +73,18 @@ export async function createCheckoutSession(opts: CheckoutOptions): Promise<Chec
   }
 }
 
-export async function getBillingPortalUrl(customerId: string, returnUrl: string): Promise<CheckoutResult> {
+export async function getBillingPortalUrl(customerId: string, returnUrl: string, email?: string | null): Promise<CheckoutResult> {
   if (!isBillingConfigured()) return { ok: false, error: "Stripe billing is not configured." };
   if (!customerId) return { ok: false, error: "No Stripe customer is linked to this account yet." };
+
+  const loginUrl = env("STRIPE_PORTAL_LOGIN_URL");
+  if (loginUrl) {
+    const url = new URL(loginUrl);
+    if (email) url.searchParams.set("prefilled_email", email);
+    return { ok: true, url: url.toString(), providerId: env("STRIPE_PORTAL_CONFIGURATION_ID") || "owed-portal" };
+  }
+
+  if (!env("STRIPE_SECRET_KEY")) return { ok: false, error: "Stripe billing portal is not configured." };
   try {
     const params = new URLSearchParams({ customer: customerId, return_url: returnUrl });
     const configurationId = env("STRIPE_PORTAL_CONFIGURATION_ID");

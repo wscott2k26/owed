@@ -4,7 +4,7 @@ import { verifyStripeWebhook } from "../../../../lib/integrations/billing";
 
 type StripeEventObject = {
   client_reference_id?: string;
-  metadata?: { userId?: string };
+  metadata?: { userId?: string; plan?: string; app?: string };
   customer?: string;
   subscription?: string;
   items?: { data?: Array<{ price?: { id?: string } }> };
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     const userId = obj.client_reference_id || obj.metadata?.userId;
     if (userId) {
       const data: Record<string, unknown> = { stripeEventAt: occurredAt };
+      if (obj.metadata?.plan === "starter" || obj.metadata?.plan === "pro") data.plan = obj.metadata.plan;
       if (typeof obj.customer === "string") data.stripeCustomerId = obj.customer;
       if (typeof obj.subscription === "string") data.stripeSubscriptionId = obj.subscription;
       await prisma.user.updateMany({ where: { id: userId, ...freshWhere(occurredAt) }, data });
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     const priceId = obj.items?.data?.[0]?.price?.id || "";
     const starter = process.env.STRIPE_PRICE_STARTER || "";
     const pro = process.env.STRIPE_PRICE_PRO || "";
-    const plan = priceId === pro ? "pro" : priceId === starter ? "starter" : undefined;
+    const plan = obj.metadata?.plan === "pro" || obj.metadata?.plan === "starter" ? obj.metadata.plan : priceId === pro ? "pro" : priceId === starter ? "starter" : undefined;
     const status = event.type === "customer.subscription.deleted" ? "canceled" : (obj.status || "incomplete");
     const trialEnd = Number(obj.trial_end || 0);
     const whereIdentity = customerId ? { stripeCustomerId: customerId } : { id: userId || "__missing__" };
