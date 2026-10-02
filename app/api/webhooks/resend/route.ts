@@ -9,15 +9,22 @@ function addressList(value: unknown): string[] {
   return value.split(",").map(extractEmail).filter(Boolean);
 }
 
-type ResendInboundEvent = {
+type ResendEvent = {
   type?: string;
-  data?: { from?: unknown; to?: unknown };
+  data?: { from?: unknown; to?: unknown; email_id?: unknown };
 };
 
 export async function POST(request: Request) {
   const raw = await request.text();
   if (!verifyResendWebhook(raw, request.headers)) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  let event: ResendInboundEvent; try { event = JSON.parse(raw) as ResendInboundEvent; } catch { return NextResponse.json({ error: "Bad JSON" }, { status: 400 }); }
+  let event: ResendEvent; try { event = JSON.parse(raw) as ResendEvent; } catch { return NextResponse.json({ error: "Bad JSON" }, { status: 400 }); }
+
+  const providerId = String(event?.data?.email_id || "").trim();
+  if (providerId && ["email.delivered", "email.bounced", "email.failed"].includes(event?.type || "")) {
+    const result = event.type === "email.delivered" ? "delivered" : event.type === "email.bounced" ? "bounced" : "failed";
+    await prisma.reminderEvent.updateMany({ where: { providerId }, data: { result } });
+    return NextResponse.json({ ok: true });
+  }
   if (event?.type !== "email.received") return NextResponse.json({ ok: true });
 
   const from = extractEmail(String(event?.data?.from || ""));
